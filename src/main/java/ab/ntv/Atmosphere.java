@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-package ab;
+package ab.ntv;
 
-import ab.ntv.Atmosphere;
-import ab.ntv.JmsAir;
-import ab.ntv.Station;
-import org.apache.activemq.ActiveMQConnectionFactory;
+import java.util.function.Consumer;
 
-import java.util.UUID;
+public interface Atmosphere {
+  Transmitter installTransmitter();
+  Receiver installReceiver();
 
-public class Nt {
-  public static void main(String[] args) throws Exception {
-    Atmosphere atmosphere = new JmsAir(new ActiveMQConnectionFactory(), "topic");
+  interface Transmitter {
+    void send(String message);
+  }
 
-    for (int i = 0; i < 3; i++) {
-      new Station(UUID.randomUUID().toString(), atmosphere);
-    }
-    Thread.sleep(60_000);
+  interface Receiver {
+    String receive();
+    void setListener(Consumer<String> listener);
   }
 }

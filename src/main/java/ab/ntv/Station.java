@@ -16,65 +16,45 @@
 
 package ab.ntv;
 
-import javax.jms.*;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Station implements MessageListener {
+public class Station {
   private final String callSign;
-  private final ConnectionFactory connectionFactory;
+  private final Atmosphere.Transmitter transmitter;
+  private final Atmosphere.Receiver receiver;
 
-  public Station(String callSign, ConnectionFactory connectionFactory) {
+  public Station(String callSign, Atmosphere atmosphere) {
     this.callSign = callSign;
-    this.connectionFactory = connectionFactory;
+    this.transmitter = atmosphere.installTransmitter();
+    this.receiver = atmosphere.installReceiver();
     new Thread(this::producer).start();
-    new Thread(this::consumer).start();
+    //new Thread(this::consumer).start();
+    this.receiver.setListener(this::listener);
   }
 
   public void producer() {
     Random random = ThreadLocalRandom.current();
-    try {
-      Connection connection = connectionFactory.createConnection();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Destination destination = session.createTopic("topic");
-      MessageProducer producer = session.createProducer(destination);
-      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-      connection.start();
-      while (true) {
+    while (true) {
+      try {
         Thread.sleep(random.nextInt(2000) + 1000);
-        String message = UUID.randomUUID().toString();
-        System.out.println(callSign + " -> " + message);
-        producer.send(session.createTextMessage(message));
+      } catch (InterruptedException e) {
+        break;
       }
-    } catch (JMSException | InterruptedException e) {
-      e.printStackTrace();
+      String message = UUID.randomUUID().toString();
+      System.out.println(callSign + " -> " + message);
+      transmitter.send(message);
     }
   }
 
   public void consumer() {
-    try {
-      Connection connection = connectionFactory.createConnection();
-      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      Destination destination = session.createTopic("topic");
-      MessageConsumer consumer = session.createConsumer(destination);
-      connection.start();
-      //consumer.setMessageListener(this);
-      while (true) {
-        Message message = consumer.receive();
-        System.out.println(callSign + " <- " + ((TextMessage) message).getText());
-      }
-    } catch (JMSException e) {
-      e.printStackTrace();
+    while (true) {
+      listener(receiver.receive());
     }
   }
 
-  @Override
-  public void onMessage(Message message) {
-    try {
-      System.out.println(callSign + " <- " + ((TextMessage) message).getText());
-    } catch (JMSException e) {
-      e.printStackTrace();
-    }
+  public void listener(String message) {
+    System.out.println(callSign + " <- " + message);
   }
 }
