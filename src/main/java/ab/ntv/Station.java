@@ -21,7 +21,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Station {
+public class Station implements MessageListener {
   private final String callSign;
   private final ConnectionFactory connectionFactory;
 
@@ -59,10 +59,20 @@ public class Station {
       Destination destination = session.createTopic("topic");
       MessageConsumer consumer = session.createConsumer(destination);
       connection.start();
+      //consumer.setMessageListener(this);
       while (true) {
         Message message = consumer.receive();
         System.out.println(callSign + " <- " + ((TextMessage) message).getText());
       }
+    } catch (JMSException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public void onMessage(Message message) {
+    try {
+      System.out.println(callSign + " <- " + ((TextMessage) message).getText());
     } catch (JMSException e) {
       e.printStackTrace();
     }
