@@ -17,15 +17,14 @@
 package ab;
 
 import ab.ntv.Atmosphere;
-import ab.ntv.JmsAir;
+import ab.ntv.SimpleAir;
 import ab.ntv.Station;
-import org.apache.activemq.ActiveMQConnectionFactory;
 
 import java.util.UUID;
 
 public class Nt {
   public static void main(String[] args) throws Exception {
-    Atmosphere atmosphere = new JmsAir(new ActiveMQConnectionFactory(), "topic");
+    Atmosphere atmosphere = new SimpleAir();
 
     for (int i = 0; i < 3; i++) {
       new Station(UUID.randomUUID().toString(), atmosphere);
