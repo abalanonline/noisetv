@@ -49,19 +49,17 @@ public class SimpleAir implements Atmosphere, Runnable {
     while (true) {
       try {
         String message = queue.take();
-        receivers.forEach(receiver -> {
-          new Thread(() -> {
-            if (receiver.listener != null) {
-              receiver.listener.accept(message);
-            } else {
-              try {
-                receiver.queue.put(message);
-              } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-              }
+        receivers.forEach(receiver -> new Thread(() -> {
+          if (receiver.listener != null) {
+            receiver.listener.accept(message);
+          } else {
+            try {
+              receiver.queue.put(message);
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
             }
-          }).start();
-        });
+          }
+        }).start());
       } catch (InterruptedException e) {
         break;
       }

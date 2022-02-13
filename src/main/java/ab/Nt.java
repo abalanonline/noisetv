@@ -17,14 +17,14 @@
 package ab;
 
 import ab.ntv.Atmosphere;
-import ab.ntv.SimpleAir;
+import ab.ntv.KinesisAir;
 import ab.ntv.Station;
 
 import java.util.UUID;
 
 public class Nt {
   public static void main(String[] args) throws Exception {
-    Atmosphere atmosphere = new SimpleAir();
+    Atmosphere atmosphere = new KinesisAir("topic");
 
     for (int i = 0; i < 3; i++) {
       new Station(UUID.randomUUID().toString(), atmosphere);
