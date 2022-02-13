@@ -16,27 +16,55 @@
 
 package ab.ntv;
 
+import javax.jms.*;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Station implements Runnable {
+public class Station {
   private final String callSign;
+  private final ConnectionFactory connectionFactory;
 
-  public Station(String callSign) {
+  public Station(String callSign, ConnectionFactory connectionFactory) {
     this.callSign = callSign;
+    this.connectionFactory = connectionFactory;
+    new Thread(this::producer).start();
+    new Thread(this::consumer).start();
   }
 
-  @Override
-  public void run() {
+  public void producer() {
     Random random = ThreadLocalRandom.current();
-    while (true) {
-      try {
+    try {
+      Connection connection = connectionFactory.createConnection();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Destination destination = session.createTopic("topic");
+      MessageProducer producer = session.createProducer(destination);
+      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+      connection.start();
+      while (true) {
         Thread.sleep(random.nextInt(2000) + 1000);
-      } catch (InterruptedException e) {
-        break;
+        String message = UUID.randomUUID().toString();
+        System.out.println(callSign + " -> " + message);
+        producer.send(session.createTextMessage(message));
       }
-      System.out.println(callSign + " -> " + UUID.randomUUID());
+    } catch (JMSException | InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void consumer() {
+    try {
+      Connection connection = connectionFactory.createConnection();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Destination destination = session.createTopic("topic");
+      MessageConsumer consumer = session.createConsumer(destination);
+      connection.start();
+      while (true) {
+        Message message = consumer.receive();
+        System.out.println(callSign + " <- " + ((TextMessage) message).getText());
+      }
+    } catch (JMSException e) {
+      e.printStackTrace();
     }
   }
 }

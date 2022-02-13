@@ -17,14 +17,17 @@
 package ab;
 
 import ab.ntv.Station;
+import org.apache.activemq.ActiveMQConnectionFactory;
 
+import javax.jms.ConnectionFactory;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class Nt {
   public static void main(String[] args) throws Exception {
-    for (int i = 0; i < 16; i++) {
-      CompletableFuture.runAsync(new Station(UUID.randomUUID().toString()));
+    ConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
+
+    for (int i = 0; i < 3; i++) {
+      new Station(UUID.randomUUID().toString(), connectionFactory);
     }
     Thread.sleep(60_000);
   }
