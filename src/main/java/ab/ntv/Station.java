@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-package ab;
+package ab.ntv;
 
-import ab.ntv.Station;
-
+import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class Nt {
-  public static void main(String[] args) throws Exception {
-    for (int i = 0; i < 16; i++) {
-      CompletableFuture.runAsync(new Station(UUID.randomUUID().toString()));
+public class Station implements Runnable {
+  private final String callSign;
+
+  public Station(String callSign) {
+    this.callSign = callSign;
+  }
+
+  @Override
+  public void run() {
+    Random random = ThreadLocalRandom.current();
+    while (true) {
+      try {
+        Thread.sleep(random.nextInt(2000) + 1000);
+      } catch (InterruptedException e) {
+        break;
+      }
+      System.out.println(callSign + " -> " + UUID.randomUUID());
     }
-    Thread.sleep(60_000);
   }
 }
