@@ -1,2 +1,2 @@
 # noisetv
-Television stations broadcasting noise of different quality.
+Television stations broadcasting the noise of different quality with different power.
