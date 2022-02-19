@@ -18,13 +18,14 @@ package ab;
 
 import ab.ntv.Atmosphere;
 import ab.ntv.KinesisAir;
+import ab.ntv.MemcachedAir;
 import ab.ntv.Station;
 
 import java.util.UUID;
 
 public class Nt {
   public static void main(String[] args) throws Exception {
-    Atmosphere atmosphere = new KinesisAir("topic");
+    Atmosphere atmosphere = new MemcachedAir();
 
     for (int i = 0; i < 3; i++) {
       new Station(UUID.randomUUID().toString(), atmosphere);
